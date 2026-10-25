@@ -1,0 +1,126 @@
+@import 'tailwindcss';
+@import '@fontsource-variable/syne';
+@import '@fontsource-variable/source-sans-3';
+
+:root {
+  --ink: #0c1f1c;
+  --ink-soft: #16352f;
+  --foam: #e8f4ef;
+  --mist: #b7d4c8;
+  --coral: #e85d4c;
+  --coral-deep: #c94436;
+  --lime: #c8f05c;
+  --sand: #f3ebe0;
+  --line: rgba(12, 31, 28, 0.12);
+  --shadow: 0 24px 60px rgba(12, 31, 28, 0.18);
+  color: var(--ink);
+  background: var(--sand);
+  font-family: 'Source Sans 3 Variable', 'Source Sans 3', system-ui, sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background:
+    radial-gradient(1200px 600px at 10% -10%, rgba(200, 240, 92, 0.28), transparent 55%),
+    radial-gradient(900px 500px at 100% 0%, rgba(232, 93, 76, 0.18), transparent 50%),
+    linear-gradient(165deg, #f7f1e8 0%, #e7f0ea 45%, #dfece6 100%);
+  background-attachment: fixed;
+}
+
+body::before {
+  content: '';
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  opacity: 0.35;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpath fill='none' stroke='%230c1f1c' stroke-opacity='0.05' d='M0 20h120M0 40h120M0 60h120M0 80h120M0 100h120M20 0v120M40 0v120M60 0v120M80 0v120M100 0v120'/%3E%3C/svg%3E");
+  z-index: 0;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: 'Syne Variable', Syne, system-ui, sans-serif;
+  letter-spacing: -0.03em;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.animate-rise {
+  animation: rise-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-rise-delay {
+  animation: rise-in 0.65s cubic-bezier(0.22, 1, 0.36, 1) 0.12s both;
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 1.8s ease-in-out infinite;
+}
+
+.focus-ring:focus-visible {
+  outline: 3px solid var(--coral);
+  outline-offset: 3px;
+}
+
+.slider-track {
+  touch-action: none;
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise,
+  .animate-rise-delay,
+  .animate-pulse-soft {
+    animation: none;
+  }
+}
