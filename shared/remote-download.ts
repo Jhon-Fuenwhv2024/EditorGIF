@@ -1,6 +1,6 @@
 /** Lógica compartida: resolver enlaces (Drive/Dropbox/…) y descargar con límites seguros. */
 
-export const MAX_BYTES = 25 * 1024 * 1024 // ~25 MB (límite práctico Netlify stream ~20–26 MB)
+export const MAX_BYTES = 35 * 1024 * 1024 // ~35 MB por enlace
 
 const BLOCKED_HOSTS = new Set([
   'localhost',
