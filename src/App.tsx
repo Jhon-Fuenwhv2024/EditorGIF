@@ -174,8 +174,8 @@ export default function App() {
         </div>
         {stage === 'upload' && (
           <p className="mt-4 max-w-xl text-lg text-[var(--ink)]/75 sm:text-xl">
-            Convierte video a GIF en el navegador: recorta, ajusta y descarga sin
-            subir nada a la nube.
+            Convierte video a GIF en el navegador: súbelo, pégalo desde un enlace o
+            Google Drive, recorta y descarga.
           </p>
         )}
       </header>
