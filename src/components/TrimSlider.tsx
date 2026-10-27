@@ -20,12 +20,19 @@ export function TrimSlider({
 }: Props) {
   const id = useId()
   const trackRef = useRef<HTMLDivElement>(null)
-  const dragging = useRef<'start' | 'end' | 'playhead' | null>(null)
+  const dragging = useRef<'start' | 'end' | 'playhead' | 'range' | null>(null)
+  const rangeDragOrigin = useRef<{
+    pointerTime: number
+    start: number
+    end: number
+    currentTime: number
+  } | null>(null)
 
   const safeDuration = Math.max(duration, 0.1)
   const startPct = (start / safeDuration) * 100
   const endPct = (end / safeDuration) * 100
   const playPct = (clamp(currentTime, 0, safeDuration) / safeDuration) * 100
+  const minGap = Math.min(0.2, safeDuration / 2)
 
   function timeFromClientX(clientX: number): number {
     const el = trackRef.current
@@ -35,13 +42,21 @@ export function TrimSlider({
     return ratio * safeDuration
   }
 
-  function beginDrag(kind: 'start' | 'end' | 'playhead', clientX: number) {
+  function beginDrag(
+    kind: 'start' | 'end' | 'playhead' | 'range',
+    clientX: number,
+  ) {
     dragging.current = kind
+    rangeDragOrigin.current =
+      kind === 'range'
+        ? { pointerTime: timeFromClientX(clientX), start, end, currentTime }
+        : null
     updateDrag(clientX)
 
     const move = (e: PointerEvent) => updateDrag(e.clientX)
     const up = () => {
       dragging.current = null
+      rangeDragOrigin.current = null
       window.removeEventListener('pointermove', move)
       window.removeEventListener('pointerup', up)
     }
@@ -51,7 +66,6 @@ export function TrimSlider({
 
   function updateDrag(clientX: number) {
     const t = timeFromClientX(clientX)
-    const minGap = Math.min(0.2, safeDuration / 2)
     if (dragging.current === 'start') {
       onChange(clamp(t, 0, end - minGap), end)
       onSeek(clamp(t, 0, end - minGap))
@@ -60,7 +74,49 @@ export function TrimSlider({
       onSeek(clamp(t, start + minGap, safeDuration))
     } else if (dragging.current === 'playhead') {
       onSeek(clamp(t, start, end))
+    } else if (dragging.current === 'range') {
+      const origin = rangeDragOrigin.current
+      if (!origin) return
+      const clipDuration = origin.end - origin.start
+      const nextStart = clamp(
+        origin.start + t - origin.pointerTime,
+        0,
+        safeDuration - clipDuration,
+      )
+      const shift = nextStart - origin.start
+      const nextEnd = nextStart + clipDuration
+      onChange(nextStart, nextEnd)
+      onSeek(clamp(origin.currentTime + shift, nextStart, nextEnd))
     }
+  }
+
+  function moveSelectionTo(nextStart: number) {
+    const clipDuration = end - start
+    const clampedStart = clamp(nextStart, 0, safeDuration - clipDuration)
+    const shift = clampedStart - start
+    const nextEnd = clampedStart + clipDuration
+    onChange(clampedStart, nextEnd)
+    onSeek(clamp(currentTime + shift, clampedStart, nextEnd))
+  }
+
+  function moveSelectionBy(seconds: number) {
+    moveSelectionTo(start + seconds)
+  }
+
+  function markStartAtPlayhead() {
+    const nextStart = clamp(currentTime, 0, end - minGap)
+    onChange(nextStart, end)
+    onSeek(nextStart)
+  }
+
+  function markEndAtPlayhead() {
+    const nextEnd = clamp(currentTime, start + minGap, safeDuration)
+    onChange(start, nextEnd)
+    onSeek(nextEnd)
+  }
+
+  function seekBy(seconds: number) {
+    onSeek(clamp(currentTime + seconds, start, end))
   }
 
   return (
@@ -79,29 +135,69 @@ export function TrimSlider({
 
       <div
         ref={trackRef}
-        className="slider-track relative h-12 rounded-2xl bg-[var(--ink)]/8 border border-[var(--line)]"
+        className="slider-track relative h-14 cursor-crosshair rounded-2xl border border-[var(--line)] bg-[var(--ink)]/8"
         role="group"
-        aria-label="Recorte de inicio y fin"
+        aria-label="Línea de tiempo y recorte"
         onPointerDown={(e) => {
-          if (e.target === e.currentTarget) {
-            beginDrag('playhead', e.clientX)
-          }
+          if ((e.target as HTMLElement).closest('button')) return
+          beginDrag('playhead', e.clientX)
         }}
       >
         <div
-          className="absolute inset-y-1 rounded-xl bg-[var(--coral)]/25 border border-[var(--coral)]/40"
+          className="focus-ring absolute inset-y-1 z-[2] cursor-grab touch-none rounded-xl border border-[var(--coral)]/60 bg-[var(--coral)]/30 active:cursor-grabbing"
           style={{ left: `${startPct}%`, right: `${100 - endPct}%` }}
-        />
+          role="slider"
+          tabIndex={0}
+          aria-label="Mover el tramo seleccionado"
+          aria-orientation="horizontal"
+          aria-valuemin={0}
+          aria-valuemax={safeDuration - (end - start)}
+          aria-valuenow={start}
+          aria-valuetext={`Tramo de ${formatTime(start)} a ${formatTime(end)}`}
+          title="Arrastra para mover el tramo completo"
+          onPointerDown={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            beginDrag('range', e.clientX)
+          }}
+          onKeyDown={(e) => {
+            if (e.key === 'ArrowLeft') {
+              e.preventDefault()
+              moveSelectionBy(e.shiftKey ? -1 : -0.1)
+            } else if (e.key === 'ArrowRight') {
+              e.preventDefault()
+              moveSelectionBy(e.shiftKey ? 1 : 0.1)
+            } else if (e.key === 'Home') {
+              e.preventDefault()
+              moveSelectionTo(0)
+            } else if (e.key === 'End') {
+              e.preventDefault()
+              moveSelectionTo(safeDuration - (end - start))
+            }
+          }}
+        >
+          <span
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 gap-0.5 rounded bg-[var(--coral-deep)]/70 px-1.5 py-1 shadow-sm"
+          >
+            <span className="h-3 w-0.5 rounded-full bg-white/90" />
+            <span className="h-3 w-0.5 rounded-full bg-white/90" />
+            <span className="h-3 w-0.5 rounded-full bg-white/90" />
+          </span>
+        </div>
         <div
-          className="absolute top-1 bottom-1 w-0.5 bg-[var(--ink)]/70"
+          className="pointer-events-none absolute top-1 bottom-1 z-[5] w-0.5 bg-[var(--ink)]"
           style={{ left: `${playPct}%` }}
           aria-hidden
-        />
+        >
+          <span className="absolute -left-[5px] -top-0.5 h-2.5 w-3 rounded-sm bg-[var(--ink)] shadow-sm" />
+          <span className="absolute -left-[5px] -bottom-0.5 h-2.5 w-3 rounded-sm bg-[var(--ink)] shadow-sm" />
+        </div>
 
         <button
           id={`${id}-start`}
           type="button"
-          className="focus-ring absolute top-1/2 z-10 h-10 w-4 -translate-x-1/2 -translate-y-1/2 rounded-md bg-[var(--ink)] text-[var(--foam)] shadow-md"
+          className="focus-ring absolute top-1/2 z-10 h-11 w-5 -translate-x-1/2 -translate-y-1/2 rounded-md border-2 border-white bg-[var(--ink)] text-[var(--foam)] shadow-md transition hover:scale-110"
           style={{ left: `${startPct}%` }}
           aria-label={`Inicio del clip, ${formatTime(start)}`}
           aria-valuemin={0}
@@ -120,7 +216,7 @@ export function TrimSlider({
         <button
           id={`${id}-end`}
           type="button"
-          className="focus-ring absolute top-1/2 z-10 h-10 w-4 -translate-x-1/2 -translate-y-1/2 rounded-md bg-[var(--coral)] text-white shadow-md"
+          className="focus-ring absolute top-1/2 z-10 h-11 w-5 -translate-x-1/2 -translate-y-1/2 rounded-md border-2 border-white bg-[var(--coral)] text-white shadow-md transition hover:scale-110"
           style={{ left: `${endPct}%` }}
           aria-label={`Fin del clip, ${formatTime(end)}`}
           aria-valuemin={start}
@@ -136,6 +232,47 @@ export function TrimSlider({
           <span className="sr-only">Fin</span>
         </button>
       </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => seekBy(-1)}
+            className="focus-ring rounded-full border border-[var(--line)] bg-white/80 px-3 py-1.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-white"
+            aria-label="Retroceder un segundo"
+          >
+            −1 s
+          </button>
+          <button
+            type="button"
+            onClick={markStartAtPlayhead}
+            className="focus-ring rounded-full border border-[var(--line)] bg-white/80 px-3 py-1.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-white"
+          >
+            Marcar inicio aquí
+          </button>
+          <button
+            type="button"
+            onClick={markEndAtPlayhead}
+            className="focus-ring rounded-full border border-[var(--line)] bg-white/80 px-3 py-1.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-white"
+          >
+            Marcar fin aquí
+          </button>
+          <button
+            type="button"
+            onClick={() => seekBy(1)}
+            className="focus-ring rounded-full border border-[var(--line)] bg-white/80 px-3 py-1.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-white"
+            aria-label="Avanzar un segundo"
+          >
+            +1 s
+          </button>
+        </div>
+        <span className="text-sm tabular-nums text-[var(--ink)]/65">
+          Posición {formatTime(currentTime)}
+        </span>
+      </div>
+      <p className="text-xs text-[var(--ink)]/60">
+        Arrastra la zona coloreada para mover el tramo completo sin cambiar su duración.
+      </p>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-2">
         <label className="flex flex-col gap-1 text-sm">
