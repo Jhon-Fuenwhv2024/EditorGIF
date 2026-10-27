@@ -58,3 +58,17 @@ export function proMaxMb(): number {
 export function maxBytesForPlan(isPro: boolean): number {
   return (isPro ? proMaxMb() : freeMaxMb()) * 1024 * 1024
 }
+
+/** Misma versión que dependency @ffmpeg/core (pin fijo para el CDN). */
+export const FFMPEG_CORE_VERSION = '0.12.6'
+
+/**
+ * Base URL del core single-thread (sin barra final).
+ * Default: jsDelivr con CORS + Cross-Origin-Resource-Policy: cross-origin
+ * (compatible con COEP credentialless + toBlobURL).
+ */
+export function ffmpegBaseUrl(): string {
+  const fromEnv = (import.meta.env.VITE_FFMPEG_BASE_URL as string | undefined)?.trim()
+  if (fromEnv) return fromEnv.replace(/\/$/, '')
+  return `https://cdn.jsdelivr.net/npm/@ffmpeg/core@${FFMPEG_CORE_VERSION}/dist/esm`
+}

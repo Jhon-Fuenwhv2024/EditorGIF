@@ -45,6 +45,7 @@ Documentadas en [`.env.example`](./.env.example). **No subas secretos al repo.**
 | `VITE_STRIPE_PUBLISHABLE_KEY` | Build | `pk_test_…` / `pk_live_…` |
 | `VITE_PRO_PRICE_LABEL` | Build | Texto opcional (no hardcodeamos precio) |
 | `VITE_FREE_MAX_MB` / `VITE_PRO_MAX_MB` | Build | Default 60 / 100 |
+| `VITE_FFMPEG_BASE_URL` | Build | CDN de `@ffmpeg/core@0.12.6` (default jsDelivr). El wasm **no** va en `dist` (límite 25 MiB de Pages). |
 | `STRIPE_SECRET_KEY` | Runtime (Pages) | `sk_test_…` / `sk_live_…` |
 | `STRIPE_PRICE_ID` | Runtime | Price ID de tu suscripción en Stripe |
 | `STRIPE_WEBHOOK_SECRET` | Runtime | `whsec_…` |

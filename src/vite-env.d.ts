@@ -10,6 +10,7 @@ interface ImportMetaEnv {
   readonly VITE_PRO_PRICE_LABEL?: string
   readonly VITE_FREE_MAX_MB?: string
   readonly VITE_PRO_MAX_MB?: string
+  readonly VITE_FFMPEG_BASE_URL?: string
 }
 
 interface ImportMeta {

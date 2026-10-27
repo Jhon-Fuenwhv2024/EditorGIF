@@ -1,5 +1,6 @@
 import { FFmpeg } from '@ffmpeg/ffmpeg'
 import { fetchFile, toBlobURL } from '@ffmpeg/util'
+import { ffmpegBaseUrl } from './env'
 import type { ConversionProgress, EditSettings } from '../types'
 
 let ffmpegInstance: FFmpeg | null = null
@@ -72,7 +73,9 @@ export async function getFFmpeg(
       onLog?.(message)
     })
 
-    const base = `${window.location.origin}/ffmpeg`
+    // CDN público (jsDelivr por defecto): CORS * + CORP cross-origin.
+    // toBlobURL crea blob: same-origin, compatible con COOP/COEP credentialless.
+    const base = ffmpegBaseUrl()
     await ffmpeg.load({
       coreURL: await toBlobURL(`${base}/ffmpeg-core.js`, 'text/javascript'),
       wasmURL: await toBlobURL(`${base}/ffmpeg-core.wasm`, 'application/wasm'),

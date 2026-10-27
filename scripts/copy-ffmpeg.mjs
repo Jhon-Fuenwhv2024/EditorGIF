@@ -1,17 +1,7 @@
-import { copyFileSync, mkdirSync, existsSync } from 'node:fs'
-import { dirname, join } from 'node:path'
-import { fileURLToPath } from 'node:url'
-
-const root = join(dirname(fileURLToPath(import.meta.url)), '..')
-const src = join(root, 'node_modules/@ffmpeg/core/dist/esm')
-const dest = join(root, 'public/ffmpeg')
-
-if (!existsSync(join(src, 'ffmpeg-core.wasm'))) {
-  console.warn('[copy-ffmpeg] @ffmpeg/core no instalado; se omite la copia')
-  process.exit(0)
-}
-
-mkdirSync(dest, { recursive: true })
-copyFileSync(join(src, 'ffmpeg-core.js'), join(dest, 'ffmpeg-core.js'))
-copyFileSync(join(src, 'ffmpeg-core.wasm'), join(dest, 'ffmpeg-core.wasm'))
-console.log('[copy-ffmpeg] Core single-thread copiado a public/ffmpeg/')
+/**
+ * Ya no se copia ffmpeg-core a public/ (Cloudflare Pages limita a 25 MiB).
+ * El core se carga desde CDN (ver VITE_FFMPEG_BASE_URL / src/lib/ffmpeg.ts).
+ */
+console.log(
+  '[ffmpeg] Core se carga desde CDN en runtime; no se copia wasm a public/dist.',
+)
