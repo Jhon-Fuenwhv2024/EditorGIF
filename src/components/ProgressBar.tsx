@@ -8,7 +8,7 @@ export function ProgressBar({ ratio, message }: Props) {
 
   return (
     <div
-      className="space-y-2"
+      className="space-y-3 rounded-2xl border border-[var(--line)] bg-[var(--foam)]/70 p-4"
       role="status"
       aria-live="polite"
       aria-busy={pct < 100}
@@ -18,7 +18,7 @@ export function ProgressBar({ ratio, message }: Props) {
         <span className="tabular-nums text-[var(--ink)]/70">{pct}%</span>
       </div>
       <div
-        className="h-3 overflow-hidden rounded-full bg-[var(--ink)]/10"
+        className="h-3.5 overflow-hidden rounded-full bg-[var(--ink)]/10"
         role="progressbar"
         aria-valuemin={0}
         aria-valuemax={100}

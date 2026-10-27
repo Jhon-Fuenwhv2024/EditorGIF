@@ -41,7 +41,7 @@ Documentadas en [`.env.example`](./.env.example). **No subas secretos al repo.**
 | `VITE_ADSENSE_SLOT_RESULT` | Cliente | Slot junto al resultado (debajo de la descarga) |
 | `VITE_STRIPE_PUBLISHABLE_KEY` | Cliente | `pk_test_…` / `pk_live_…` |
 | `VITE_PRO_PRICE_LABEL` | Cliente | Texto opcional junto al botón Pro (no inventamos el precio en código) |
-| `VITE_FREE_MAX_MB` | Cliente | Límite enlace gratis (por defecto 35) |
+| `VITE_FREE_MAX_MB` | Cliente | Límite enlace gratis (por defecto **60**) |
 | `VITE_PRO_MAX_MB` | Cliente | Límite enlace Pro (por defecto 100) |
 | `STRIPE_SECRET_KEY` | Netlify | `sk_test_…` o `sk_live_…` |
 | `STRIPE_PRICE_ID` | Netlify | Price ID de la suscripción que **tú** creas en Stripe |

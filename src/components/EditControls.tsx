@@ -14,29 +14,71 @@ export function EditControls({
   onChange,
 }: Props) {
   const maxWidth = Math.max(64, sourceWidth)
+  const presets = [
+    { name: 'Ligero', maxWidth: 320, scale: 0.5, fps: 8, detail: 'Menor tamaño' },
+    { name: 'Equilibrado', maxWidth: 480, scale: 0.75, fps: 12, detail: 'Uso general' },
+    { name: 'Fluido', maxWidth: 640, scale: 1, fps: 18, detail: 'Más detalle' },
+  ]
 
   return (
-    <div className="grid gap-5 sm:grid-cols-2">
-      <label className="flex flex-col gap-2 text-sm">
+    <div className="grid grid-cols-2 gap-2.5">
+      <fieldset className="col-span-2 space-y-1.5 text-sm">
+        <legend className="font-medium text-[var(--ink)]">Ajuste rápido</legend>
+        <div className="grid grid-cols-3 gap-2">
+          {presets.map((preset) => (
+            <button
+              key={preset.name}
+              type="button"
+              onClick={() => {
+                const width = Math.min(
+                  sourceWidth * preset.scale,
+                  preset.maxWidth,
+                )
+                onChange({
+                  width: Math.min(
+                    maxWidth,
+                    Math.max(
+                      Math.min(96, maxWidth),
+                      Math.floor(width / 2) * 2,
+                    ),
+                  ),
+                  fps: preset.fps,
+                })
+              }}
+              className="focus-ring rounded-xl border border-[var(--line)] bg-white px-2 py-1.5 text-left transition hover:border-[var(--coral)]/45 hover:bg-[var(--foam)]"
+              aria-label={`${preset.name}: ${preset.detail}, ${preset.fps} FPS`}
+            >
+              <span className="block text-xs font-bold text-[var(--ink)] sm:text-sm">
+                {preset.name}
+              </span>
+              <span className="mt-0.5 block text-[10px] leading-tight text-[var(--ink)]/55">
+                {preset.detail}
+              </span>
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
+      <label className="flex flex-col gap-1 rounded-xl border border-[var(--line)] bg-white/70 p-2.5 text-xs sm:text-sm">
         <span className="font-medium text-[var(--ink)]">
           Ancho del GIF: {settings.width}px
         </span>
         <input
           type="range"
-          min={96}
+          min={Math.min(96, maxWidth)}
           max={maxWidth}
           step={2}
           value={settings.width}
           onChange={(e) => onChange({ width: Number(e.target.value) })}
-          className="accent-[var(--coral)]"
+          className="editor-range"
           aria-valuetext={`${settings.width} píxeles`}
         />
-        <span className="text-xs text-[var(--ink)]/60">
-          Altura proporcional · origen {sourceWidth}×{sourceHeight}
+        <span className="text-[10px] text-[var(--ink)]/55">
+          Proporcional · {sourceWidth}×{sourceHeight}
         </span>
       </label>
 
-      <label className="flex flex-col gap-2 text-sm">
+      <label className="flex flex-col gap-1 rounded-xl border border-[var(--line)] bg-white/70 p-2.5 text-xs sm:text-sm">
         <span className="font-medium text-[var(--ink)]">
           FPS: {settings.fps}
         </span>
@@ -47,14 +89,14 @@ export function EditControls({
           step={1}
           value={settings.fps}
           onChange={(e) => onChange({ fps: Number(e.target.value) })}
-          className="accent-[var(--coral)]"
+          className="editor-range"
         />
-        <span className="text-xs text-[var(--ink)]/60">
-          Más FPS = más fluido y más pesado
+        <span className="text-[10px] text-[var(--ink)]/55">
+          Más fluidez · más tamaño
         </span>
       </label>
 
-      <label className="flex flex-col gap-2 text-sm">
+      <label className="col-span-2 flex flex-col gap-1 rounded-xl border border-[var(--line)] bg-white/70 p-2.5 text-xs sm:text-sm">
         <span className="font-medium text-[var(--ink)]">
           Velocidad: {settings.speed.toFixed(1)}×
         </span>
@@ -65,14 +107,14 @@ export function EditControls({
           step={0.1}
           value={settings.speed}
           onChange={(e) => onChange({ speed: Number(e.target.value) })}
-          className="accent-[var(--coral)]"
+          className="editor-range"
         />
       </label>
 
-      <fieldset className="flex flex-col gap-2 text-sm">
+      <fieldset className="col-span-2 flex flex-col gap-2 rounded-xl border border-[var(--line)] bg-white/70 p-2.5 text-sm">
         <legend className="font-medium text-[var(--ink)]">Opciones</legend>
-        <div className="flex flex-wrap gap-3">
-          <label className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-white/70 px-3 py-2">
+        <div className="flex flex-wrap gap-2">
+          <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[var(--line)] bg-white px-2.5 py-1.5 text-xs transition hover:border-[var(--coral)]/40 hover:bg-[var(--foam)]">
             <input
               type="checkbox"
               checked={settings.reverse}
@@ -81,7 +123,7 @@ export function EditControls({
             />
             Invertir
           </label>
-          <label className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-white/70 px-3 py-2">
+          <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[var(--line)] bg-white px-2.5 py-1.5 text-xs transition hover:border-[var(--coral)]/40 hover:bg-[var(--foam)]">
             <input
               type="checkbox"
               checked={settings.loop}
@@ -90,7 +132,7 @@ export function EditControls({
             />
             Loop infinito
           </label>
-          <label className="inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-white/70 px-3 py-2">
+          <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[var(--line)] bg-white px-2.5 py-1.5 text-xs transition hover:border-[var(--coral)]/40 hover:bg-[var(--foam)]">
             <input
               type="checkbox"
               checked={!!settings.crop}
@@ -117,8 +159,8 @@ export function EditControls({
         </div>
       </fieldset>
 
-      <div className="sm:col-span-2 grid gap-3 sm:grid-cols-[1fr_auto_auto]">
-        <label className="flex flex-col gap-2 text-sm">
+      <div className="col-span-2 grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+        <label className="col-span-2 flex flex-col gap-1 text-xs sm:text-sm">
           <span className="font-medium text-[var(--ink)]">
             Texto encima (opcional)
           </span>
@@ -128,20 +170,20 @@ export function EditControls({
             maxLength={80}
             placeholder="Ej. ¡Hola!"
             onChange={(e) => onChange({ text: e.target.value })}
-            className="focus-ring rounded-xl border border-[var(--line)] bg-white/80 px-3 py-2"
+            className="editor-field focus-ring rounded-xl px-3 py-2"
           />
         </label>
-        <label className="flex flex-col gap-2 text-sm">
+        <label className="flex flex-col gap-1 text-xs sm:text-sm">
           <span className="font-medium text-[var(--ink)]">Color</span>
           <input
             type="color"
             value={settings.textColor}
             onChange={(e) => onChange({ textColor: e.target.value })}
-            className="focus-ring h-11 w-full min-w-14 cursor-pointer rounded-xl border border-[var(--line)] bg-white/80 p-1"
+            className="editor-field focus-ring h-9 w-14 cursor-pointer rounded-lg p-1"
             aria-label="Color del texto"
           />
         </label>
-        <label className="flex flex-col gap-2 text-sm">
+        <label className="flex flex-col gap-1 text-xs sm:text-sm">
           <span className="font-medium text-[var(--ink)]">
             Tamaño {settings.textSize}
           </span>
@@ -151,7 +193,7 @@ export function EditControls({
             max={64}
             value={settings.textSize}
             onChange={(e) => onChange({ textSize: Number(e.target.value) })}
-            className="accent-[var(--coral)] mt-2"
+            className="editor-range"
             disabled={!settings.text.trim()}
           />
         </label>

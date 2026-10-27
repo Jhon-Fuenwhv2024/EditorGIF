@@ -47,7 +47,7 @@ export function stripePublishableKey(): string | null {
 
 export function freeMaxMb(): number {
   const n = Number(import.meta.env.VITE_FREE_MAX_MB)
-  return Number.isFinite(n) && n > 0 ? n : 35
+  return Number.isFinite(n) && n > 0 ? n : 60
 }
 
 export function proMaxMb(): number {

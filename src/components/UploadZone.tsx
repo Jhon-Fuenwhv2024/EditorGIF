@@ -9,7 +9,7 @@ type Props = {
   maxMbLabel?: number
 }
 
-export function UploadZone({ onFile, disabled, maxBytes, maxMbLabel = 35 }: Props) {
+export function UploadZone({ onFile, disabled, maxBytes, maxMbLabel = 60 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -61,16 +61,16 @@ export function UploadZone({ onFile, disabled, maxBytes, maxMbLabel = 35 }: Prop
   const busy = disabled || linkBusy
 
   return (
-    <div className="animate-rise-delay mx-auto w-full max-w-3xl space-y-5">
+    <div className="animate-rise-delay mx-auto grid w-full max-w-5xl gap-5 md:grid-cols-[1.15fr_0.85fr] md:items-stretch">
       <div
         role="button"
         tabIndex={busy ? -1 : 0}
         aria-disabled={busy}
         aria-label="Zona para subir video. Arrastra un archivo o pulsa para elegir."
-        className={`focus-ring relative overflow-hidden rounded-[2rem] border-2 border-dashed px-6 py-14 text-center transition duration-300 sm:px-10 sm:py-16 ${
+        className={`focus-ring group relative flex min-h-[20rem] flex-col items-center justify-center overflow-hidden rounded-[1.75rem] border-2 border-dashed px-6 py-10 text-center shadow-[var(--shadow)] transition duration-300 sm:rounded-[2rem] sm:px-10 sm:py-14 ${
           dragging
-            ? 'border-[var(--coral)] bg-[var(--coral)]/10 scale-[1.01]'
-            : 'border-[var(--ink)]/20 bg-white/55 hover:border-[var(--ink)]/40 hover:bg-white/75'
+            ? 'scale-[1.01] border-[var(--coral)] bg-[var(--coral)]/10'
+            : 'border-white/80 bg-white/75 hover:border-[var(--coral)]/45 hover:bg-white/95'
         } ${busy ? 'opacity-60 pointer-events-none' : 'cursor-pointer'}`}
         onClick={() => inputRef.current?.click()}
         onKeyDown={(e) => {
@@ -98,15 +98,15 @@ export function UploadZone({ onFile, disabled, maxBytes, maxMbLabel = 35 }: Prop
         }}
       >
         <div
-          className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[var(--lime)]/40 blur-2xl"
+          className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[var(--lime)]/45 blur-2xl transition-transform duration-500 group-hover:scale-125"
           aria-hidden
         />
         <div
-          className="pointer-events-none absolute -bottom-16 -left-8 h-44 w-44 rounded-full bg-[var(--coral)]/25 blur-2xl"
+          className="pointer-events-none absolute -bottom-16 -left-8 h-44 w-44 rounded-full bg-[var(--coral)]/20 blur-2xl transition-transform duration-500 group-hover:scale-125"
           aria-hidden
         />
 
-        <div className="relative mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--ink)] text-[var(--lime)] shadow-[var(--shadow)]">
+        <div className="relative mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-[var(--ink)] text-[var(--lime)] shadow-lg transition-transform duration-300 group-hover:-translate-y-1">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden>
             <path
               d="M12 16V4m0 0 4 4m-4-4-4 4M4 16.5V18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1.5"
@@ -119,13 +119,12 @@ export function UploadZone({ onFile, disabled, maxBytes, maxMbLabel = 35 }: Prop
         </div>
 
         <p className="font-display text-2xl text-[var(--ink)] sm:text-3xl">
-          Arrastra tu video aquí
+          Crea un GIF desde tu video
         </p>
         <p className="mx-auto mt-3 max-w-md text-base text-[var(--ink)]/70 sm:text-lg">
-          o elige un archivo MP4, WebM o MOV. La conversión sigue siendo local en tu
-          dispositivo.
+          Arrastra un archivo aquí o selecciónalo. Compatible con MP4, WebM y MOV.
         </p>
-        <span className="mt-6 inline-flex items-center justify-center rounded-full bg-[var(--coral)] px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:bg-[var(--coral-deep)]">
+        <span className="mt-6 inline-flex items-center justify-center rounded-full bg-[var(--coral)] px-6 py-3 text-sm font-bold text-white shadow-md transition duration-200 group-hover:-translate-y-0.5 group-hover:bg-[var(--coral-deep)]">
           Elegir archivo
         </span>
 
@@ -139,9 +138,12 @@ export function UploadZone({ onFile, disabled, maxBytes, maxMbLabel = 35 }: Prop
         />
       </div>
 
-      <div className="rounded-[1.75rem] border border-[var(--line)] bg-white/70 p-5 shadow-[var(--shadow)] backdrop-blur-sm sm:p-6">
+      <div className="flex flex-col justify-center rounded-[1.75rem] border border-white/80 bg-white/85 p-5 shadow-[var(--shadow)] backdrop-blur-xl sm:p-6">
+        <span className="mb-3 inline-flex w-fit rounded-full bg-[var(--foam)] px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] text-[var(--ink)]/60">
+          Opción alternativa
+        </span>
         <h2 className="font-display text-xl text-[var(--ink)] sm:text-2xl">
-          O pega un enlace
+          Importar desde un enlace
         </h2>
         <p className="mt-1 text-sm text-[var(--ink)]/65 sm:text-base">
           URL directa, Google Drive (compartido con «Cualquier persona con el enlace») o
@@ -164,12 +166,12 @@ export function UploadZone({ onFile, disabled, maxBytes, maxMbLabel = 35 }: Prop
             value={link}
             disabled={busy}
             onChange={(e) => setLink(e.target.value)}
-            className="focus-ring min-w-0 flex-1 rounded-full border border-[var(--line)] bg-white/90 px-4 py-3 text-base text-[var(--ink)] placeholder:text-[var(--ink)]/40"
+            className="editor-field focus-ring min-w-0 flex-1 rounded-xl px-4 py-3 text-base text-[var(--ink)] placeholder:text-[var(--ink)]/40"
           />
           <button
             type="submit"
             disabled={busy || !link.trim()}
-            className="focus-ring inline-flex items-center justify-center rounded-full bg-[var(--ink)] px-6 py-3 text-base font-semibold text-[var(--lime)] transition hover:bg-[var(--ink-soft)] disabled:opacity-50"
+            className="focus-ring inline-flex items-center justify-center rounded-xl bg-[var(--ink)] px-6 py-3 text-base font-bold text-[var(--lime)] transition hover:bg-[var(--ink-soft)] disabled:opacity-50"
           >
             {linkBusy ? 'Importando…' : 'Importar'}
           </button>
