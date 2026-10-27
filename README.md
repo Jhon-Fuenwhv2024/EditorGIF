@@ -2,22 +2,26 @@
 
 Web app en español para convertir **video a GIF** en el navegador (Vite + React + TypeScript + Tailwind + ffmpeg.wasm). Monetización opcional (AdSense + Stripe Pro), SEO, PWA y páginas legales.
 
-**Sitio de producción:** [https://videogif.trainfit.cloud](https://videogif.trainfit.cloud)
+**Sitio de producción:** [https://videogif.trainfit.cloud](https://videogif.trainfit.cloud)  
+**Hosting:** Cloudflare Pages (+ Pages Functions en Workers)
 
 ## Arranque local
 
 ```bash
 cp .env.example .env   # opcional; sin secretos la app funciona en modo gratis
 npm install
-npm run dev
+npm run dev            # Vite en http://127.0.0.1:4521 (API vía middleware)
 ```
 
-Abre `http://127.0.0.1:4521`.
+Simular Cloudflare Pages (build + Functions + headers):
+
+```bash
+npm run pages:dev      # http://127.0.0.1:8788
+```
 
 ```bash
 npm run build
 npm run lint
-npm run preview
 ```
 
 ## Qué incluye
@@ -25,7 +29,7 @@ npm run preview
 - Subida de video o importación por enlace (URL, Google Drive, Dropbox)
 - Edición: recorte, ancho, FPS, velocidad, crop, texto, invertir, loop
 - GIF con paleta (`palettegen` / `paletteuse`) y progreso
-- Plan gratis: anuncios opcionales, marca de agua «hecho con Fotogif», límite de enlace configurable
+- Plan gratis: anuncios opcionales, marca de agua «hecho con Fotogif», ~60 MB por enlace
 - Plan Pro (Stripe): sin anuncios, sin marca de agua, límite mayor, portal para cancelar
 - Landing, FAQ, SEO, PWA, compartir GIF, privacidad y términos
 
@@ -35,100 +39,108 @@ Documentadas en [`.env.example`](./.env.example). **No subas secretos al repo.**
 
 | Variable | Dónde | Uso |
 | --- | --- | --- |
-| `VITE_SITE_URL` | Cliente / build | URL pública. **Por defecto:** `https://videogif.trainfit.cloud` (canonical, OG, sitemap, share, Stripe) |
-| `VITE_ADSENSE_CLIENT` | Cliente | `ca-pub-…`. Si falta, **no** se cargan anuncios |
-| `VITE_ADSENSE_SLOT_CONVERT` | Cliente | Slot durante la conversión |
-| `VITE_ADSENSE_SLOT_RESULT` | Cliente | Slot junto al resultado (debajo de la descarga) |
-| `VITE_STRIPE_PUBLISHABLE_KEY` | Cliente | `pk_test_…` / `pk_live_…` |
-| `VITE_PRO_PRICE_LABEL` | Cliente | Texto opcional junto al botón Pro (no inventamos el precio en código) |
-| `VITE_FREE_MAX_MB` | Cliente | Límite enlace gratis (por defecto **60**) |
-| `VITE_PRO_MAX_MB` | Cliente | Límite enlace Pro (por defecto 100) |
-| `STRIPE_SECRET_KEY` | Netlify | `sk_test_…` o `sk_live_…` |
-| `STRIPE_PRICE_ID` | Netlify | Price ID de la suscripción que **tú** creas en Stripe |
-| `STRIPE_WEBHOOK_SECRET` | Netlify | `whsec_…` del webhook |
+| `VITE_SITE_URL` | Build (Pages) | Default `https://videogif.trainfit.cloud` |
+| `VITE_ADSENSE_CLIENT` | Build | `ca-pub-…`. Si falta, no hay anuncios |
+| `VITE_ADSENSE_SLOT_CONVERT` / `VITE_ADSENSE_SLOT_RESULT` | Build | Slots |
+| `VITE_STRIPE_PUBLISHABLE_KEY` | Build | `pk_test_…` / `pk_live_…` |
+| `VITE_PRO_PRICE_LABEL` | Build | Texto opcional (no hardcodeamos precio) |
+| `VITE_FREE_MAX_MB` / `VITE_PRO_MAX_MB` | Build | Default 60 / 100 |
+| `STRIPE_SECRET_KEY` | Runtime (Pages) | `sk_test_…` / `sk_live_…` |
+| `STRIPE_PRICE_ID` | Runtime | Price ID de tu suscripción en Stripe |
+| `STRIPE_WEBHOOK_SECRET` | Runtime | `whsec_…` |
 
-Sin AdSense/Stripe la app convierte y descarga igual que antes.
+Las `VITE_*` deben estar disponibles en el **build**. Las `STRIPE_*` en el **runtime** de Functions (Production/Preview).
 
-## Cómo recordamos quién es Pro (y por qué)
+## Cómo recordamos quién es Pro
 
-**Enfoque:** el usuario indica su **email** (el del pago). Se guarda solo en `localStorage`. El servidor consulta **Stripe** (clientes + suscripciones activas/trialing del `STRIPE_PRICE_ID`) vía:
+Email en `localStorage` + verificación server-side contra Stripe (`/api/pro-status`, `/api/verify-checkout`, portal). Stripe es la fuente de verdad; no hay base de datos. El webhook `/api/stripe-webhook` valida la firma con **WebCrypto** (`constructEventAsync`).
 
-- `POST /api/pro-status` — restaurar / comprobar  
-- `POST /api/verify-checkout` — tras Checkout (`session_id`)  
-- `POST /api/create-portal-session` — cancelar / gestionar  
+## Despliegue en Cloudflare Pages + `videogif.trainfit.cloud`
 
-**Por qué:** Stripe es la fuente de verdad, no hace falta base de datos, restaurar compra es trivial y el secreto nunca llega al navegador. Limitación: quien conozca el email podría intentar restaurar en otro dispositivo; mitigaciones futuras (magic link / auth) si hace falta.
+Config del repo:
 
-Webhook `POST /api/stripe-webhook` con `STRIPE_WEBHOOK_SECRET` para auditoría; el estado Pro se resuelve contra Stripe al vuelo.
+- Build: `npm run build`
+- Salida: `dist`
+- Functions: carpeta `functions/` (Workers)
+- Headers COOP/COEP: `public/_headers`
+- SPA fallback: `public/_redirects`
+- `wrangler.toml` con `pages_build_output_dir = "dist"`
 
-## Despliegue en Netlify + subdominio `videogif.trainfit.cloud`
+### 1) Conectar GitHub
 
-El repo incluye [`netlify.toml`](./netlify.toml) con:
+1. [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Workers & Pages** → **Create** → **Pages** → **Connect to Git**.
+2. Elige el repo `EditorGIF` (o el de Fotogif).
+3. Ajustes de build:
+   - **Framework preset:** Vite (o None)
+   - **Build command:** `npm run build`
+   - **Build output directory:** `dist`
+   - **Root directory:** `/` (raíz del repo)
+4. Guarda y lanza el primer deploy.
 
-- `build`: `npm run build` → `dist`
-- `functions`: `netlify/functions` (esbuild)
-- redirect SPA `/*` → `/index.html`
-- headers **COOP** (`same-origin`) y **COEP** (`credentialless`, compatible con AdSense/Stripe; ffmpeg es single-thread)
+### 2) Variables de entorno
 
-### 1) Conectar el sitio en Netlify
+En el proyecto Pages → **Settings** → **Environment variables**:
 
-1. Netlify → **Add new site** → Import from Git → elige el repo de Fotogif.
-2. Confirma build command `npm run build` y publish directory `dist` (ya vienen de `netlify.toml`).
-3. **Site configuration → Environment variables** y añade al menos:
+1. **Production** (y Preview si quieres):
    - `VITE_SITE_URL` = `https://videogif.trainfit.cloud`
-   - (opcional) claves Stripe / AdSense según `.env.example`
-4. **Deploy** el sitio. Anota el dominio temporal tipo `algo.netlify.app`.
+   - resto de `VITE_*` que uses (AdSense, etc.)
+2. Secretos de runtime (Production/Preview):
+   - `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`
+3. **Redeploy** tras cambiar `VITE_*` (hacen falta en el build).
 
-### 2) Dominio personalizado + CNAME
+CLI opcional:
 
-1. En Netlify: **Domain management → Add domain alias** → `videogif.trainfit.cloud`.
-2. Netlify te mostrará el destino CNAME (suele ser `tu-sitio.netlify.app` o un target que indique el panel).
-3. En el DNS de **trainfit.cloud** (donde Jhon gestione el dominio: Cloudflare, Route53, registrador, etc.) crea:
+```bash
+npx wrangler pages secret put STRIPE_SECRET_KEY --project-name=fotogif
+```
 
-   | Tipo | Nombre / host | Destino / valor |
+### 3) Dominio personalizado (DNS ya en Cloudflare)
+
+El DNS de `trainfit.cloud` está en Cloudflare. Para el subdominio:
+
+1. Pages → tu proyecto → **Custom domains** → **Set up a custom domain**.
+2. Añade `videogif.trainfit.cloud`.
+3. Como la zona ya está en Cloudflare, suele crearse/ajustarse solo un registro:
+
+   | Tipo | Nombre | Destino |
    | --- | --- | --- |
-   | `CNAME` | `videogif` | `TU-SITIO.netlify.app` (el que indique Netlify) |
+   | `CNAME` | `videogif` | `tu-proyecto.pages.dev` (el que indique el panel) |
 
-4. Espera la propagación DNS (minutos u horas). En Netlify, cuando el dominio aparezca como **DNS configured**, activa **HTTPS** (Let’s Encrypt) si no se provisiona solo.
-5. Comprueba:
+4. **Si ya existe un CNAME `videogif`** (p. ej. apuntando a Netlify u otro host):
+   - Entra en **DNS** de la zona `trainfit.cloud`.
+   - Edita el registro `videogif` y cámbialo al target de **Pages** que muestre Cloudflare (o elimina el viejo y deja que Custom domains lo recree).
+   - Proxy naranja (Proxied) está bien para Pages en la misma cuenta.
+5. Espera a que el dominio quede **Active** con HTTPS.
+6. Comprueba:
    - https://videogif.trainfit.cloud/
    - https://videogif.trainfit.cloud/app
+   - https://videogif.trainfit.cloud/api/pro-status (POST)
    - https://videogif.trainfit.cloud/ads.txt
-   - https://videogif.trainfit.cloud/sitemap.xml
 
-> Si el DNS exige un registro Apex (`@`) no aplica aquí: `videogif` es un **subdominio**, CNAME es lo correcto.
+### 4) AdSense
 
-### 3) Google AdSense
+Igual que antes: sitio `https://videogif.trainfit.cloud`, `VITE_ADSENSE_CLIENT`, slots, y `public/ads.txt`.
 
-1. Añade `https://videogif.trainfit.cloud` en AdSense.
-2. `VITE_ADSENSE_CLIENT` = `ca-pub-…`
-3. Crea 2 unidades → `VITE_ADSENSE_SLOT_CONVERT` y `VITE_ADSENSE_SLOT_RESULT`
-4. Edita `public/ads.txt`: descomenta la línea y sustituye `pub-XXXXXXXXXXXXXXXX`
-5. Sin `VITE_ADSENSE_CLIENT` no se muestra ningún anuncio (ni falsos). El script solo carga tras aceptar cookies.
+### 5) Stripe
 
-### 4) Stripe (modo prueba)
+1. Price ID de suscripción → `STRIPE_PRICE_ID` (no inventamos el precio en código).
+2. Keys test/live → `STRIPE_SECRET_KEY` / `VITE_STRIPE_PUBLISHABLE_KEY`.
+3. Customer Portal activado.
+4. Webhook: `https://videogif.trainfit.cloud/api/stripe-webhook` → `whsec_…` → `STRIPE_WEBHOOK_SECRET`.
+5. Success/cancel los arma el servidor con `VITE_SITE_URL`.
 
-1. Dashboard en **Test mode** → producto de **suscripción** → copia **Price ID** → `STRIPE_PRICE_ID` (no inventamos precios en el código).
-2. API keys: `sk_test_…` → `STRIPE_SECRET_KEY`; `pk_test_…` → `VITE_STRIPE_PUBLISHABLE_KEY`
-3. Activa **Customer portal** (cancelación).
-4. Webhook: `https://videogif.trainfit.cloud/api/stripe-webhook` → `whsec_…` → `STRIPE_WEBHOOK_SECRET`
-5. Success/cancel URLs las arma el servidor con `VITE_SITE_URL` (por defecto el subdominio de arriba).
-6. Prueba en `/app` con tarjeta `4242 4242 4242 4242`.
+## API (Cloudflare Pages Functions)
 
-**Nota sobre checkout de prueba en este entorno de agente:** no hay claves Stripe de Jhon aquí, así que el flujo de pago real no se ejecutó. La UI y las functions quedan listas; valida en Netlify con `sk_test_…`.
-
-## API
-
-| Ruta | Método | Rol |
+| Ruta | Archivo | Rol |
 | --- | --- | --- |
-| `/api/fetch-video` | POST | Proxy de descarga por enlace |
-| `/api/create-checkout-session` | POST | Stripe Checkout |
-| `/api/create-portal-session` | POST | Portal de cliente |
-| `/api/pro-status` | POST | ¿Email tiene Pro? |
-| `/api/verify-checkout` | POST | Verifica `session_id` |
-| `/api/stripe-webhook` | POST | Webhook firmado |
+| `/api/fetch-video` | `functions/api/fetch-video.ts` | Proxy de enlaces |
+| `/api/create-checkout-session` | `functions/api/create-checkout-session.ts` | Checkout |
+| `/api/create-portal-session` | `functions/api/create-portal-session.ts` | Portal / cancelar |
+| `/api/pro-status` | `functions/api/pro-status.ts` | ¿Es Pro? |
+| `/api/verify-checkout` | `functions/api/verify-checkout.ts` | Tras pagar |
+| `/api/stripe-webhook` | `functions/api/stripe-webhook.ts` | Webhook (WebCrypto) |
 
-En local, Vite monta las mismas rutas (lee `.env`).
+Lógica compartida en `shared/api-handlers.ts` y `shared/stripe-server.ts` (Stripe con `createFetchHttpClient`).
 
 ## Licencia
 

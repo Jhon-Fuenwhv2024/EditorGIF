@@ -1,0 +1,9 @@
+# Cloudflare Pages — producción: https://videogif.trainfit.cloud
+name = "fotogif"
+compatibility_date = "2024-11-12"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "dist"
+
+# Variables secretas (STRIPE_*) se configuran en el dashboard de Pages
+# o con: npx wrangler pages secret put STRIPE_SECRET_KEY --project-name=fotogif
+# VITE_* se inyectan en el build (Settings → Environment variables → Build).

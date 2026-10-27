@@ -1,0 +1,2 @@
+# SPA fallback (React Router). Las Pages Functions en /api/* tienen prioridad.
+/*    /index.html   200
