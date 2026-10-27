@@ -88,7 +88,7 @@ async function downloadViaProxy(rawUrl: string): Promise<File> {
       throw new Error(data.error || `No se pudo descargar (HTTP ${res.status})`)
     }
     throw new Error(
-      `No se pudo descargar el video (HTTP ${res.status}). En local, reinicia npm run dev; en producción despliega en Netlify.`,
+      `No se pudo importar el video (HTTP ${res.status}). Comprueba el enlace e inténtalo de nuevo, o selecciona el archivo.`,
     )
   }
 

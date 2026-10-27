@@ -3,16 +3,16 @@
 @import '@fontsource-variable/source-sans-3';
 
 :root {
-  --ink: #0c1f1c;
-  --ink-soft: #16352f;
-  --foam: #e8f4ef;
-  --mist: #b7d4c8;
-  --coral: #e85d4c;
-  --coral-deep: #c94436;
-  --lime: #c8f05c;
-  --sand: #f3ebe0;
-  --line: rgba(12, 31, 28, 0.12);
-  --shadow: 0 24px 60px rgba(12, 31, 28, 0.18);
+  --ink: #172321;
+  --ink-soft: #2b3c38;
+  --foam: #eaf3ef;
+  --mist: #b9cec4;
+  --coral: #e45c4d;
+  --coral-deep: #c74639;
+  --lime: #d3f27a;
+  --sand: #f4f4ef;
+  --line: rgba(23, 35, 33, 0.12);
+  --shadow: 0 28px 80px rgba(26, 42, 37, 0.12);
   color: var(--ink);
   background: var(--sand);
   font-family: 'Source Sans 3 Variable', 'Source Sans 3', system-ui, sans-serif;
@@ -36,9 +36,9 @@ body {
   margin: 0;
   min-width: 320px;
   background:
-    radial-gradient(1200px 600px at 10% -10%, rgba(200, 240, 92, 0.28), transparent 55%),
-    radial-gradient(900px 500px at 100% 0%, rgba(232, 93, 76, 0.18), transparent 50%),
-    linear-gradient(165deg, #f7f1e8 0%, #e7f0ea 45%, #dfece6 100%);
+    radial-gradient(900px 500px at 0% 0%, rgba(211, 242, 122, 0.17), transparent 58%),
+    radial-gradient(900px 520px at 100% 5%, rgba(228, 92, 77, 0.11), transparent 54%),
+    linear-gradient(160deg, #f7f7f2 0%, #edf2ed 52%, #e8efeb 100%);
   background-attachment: fixed;
 }
 
@@ -47,7 +47,7 @@ body::before {
   pointer-events: none;
   position: fixed;
   inset: 0;
-  opacity: 0.35;
+  opacity: 0.18;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cpath fill='none' stroke='%230c1f1c' stroke-opacity='0.05' d='M0 20h120M0 40h120M0 60h120M0 80h120M0 100h120M20 0v120M40 0v120M60 0v120M80 0v120M100 0v120'/%3E%3C/svg%3E");
   z-index: 0;
 }
@@ -112,9 +112,106 @@ h3,
   outline-offset: 3px;
 }
 
+.editor-range {
+  width: 100%;
+  height: 1.25rem;
+  cursor: pointer;
+  appearance: none;
+  background: transparent;
+}
+
+.editor-range::-webkit-slider-runnable-track {
+  height: 0.38rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--coral), #f2a58f);
+}
+
+.editor-range::-moz-range-track {
+  height: 0.38rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--coral), #f2a58f);
+}
+
+.editor-range::-webkit-slider-thumb {
+  width: 1rem;
+  height: 1rem;
+  margin-top: -0.31rem;
+  appearance: none;
+  border: 3px solid white;
+  border-radius: 50%;
+  background: var(--coral-deep);
+  box-shadow: 0 1px 5px rgba(23, 35, 33, 0.28);
+}
+
+.editor-range::-moz-range-thumb {
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 3px solid white;
+  border-radius: 50%;
+  background: var(--coral-deep);
+  box-shadow: 0 1px 5px rgba(23, 35, 33, 0.28);
+}
+
+.editor-field {
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.82);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.editor-field:focus {
+  border-color: var(--coral);
+  box-shadow: 0 0 0 3px rgba(228, 92, 77, 0.12);
+  outline: none;
+}
+
 .slider-track {
   touch-action: none;
   user-select: none;
+}
+
+.timeline-track::before {
+  position: absolute;
+  inset: 0.4rem 0.45rem;
+  border-radius: 0.55rem;
+  background-image: repeating-linear-gradient(
+    90deg,
+    transparent 0,
+    transparent calc(10% - 1px),
+    rgba(23, 35, 33, 0.12) calc(10% - 1px),
+    rgba(23, 35, 33, 0.12) 10%
+  );
+  content: '';
+  pointer-events: none;
+}
+
+.settings-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.settings-scroll:hover,
+.settings-scroll:focus-within {
+  scrollbar-color: rgba(23, 35, 33, 0.28) transparent;
+}
+
+.settings-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.settings-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.settings-scroll::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: transparent;
+  background-clip: padding-box;
+}
+
+.settings-scroll:hover::-webkit-scrollbar-thumb,
+.settings-scroll:focus-within::-webkit-scrollbar-thumb {
+  background-color: rgba(23, 35, 33, 0.28);
 }
 
 @media (prefers-reduced-motion: reduce) {
