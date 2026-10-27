@@ -139,7 +139,7 @@ export function UploadZone({ onFile, disabled }: Props) {
         </h2>
         <p className="mt-1 text-sm text-[var(--ink)]/65 sm:text-base">
           URL directa, Google Drive (compartido con «Cualquier persona con el enlace») o
-          Dropbox. Máx. ~35&nbsp;MB por enlace.
+          Dropbox. Máx. ~50&nbsp;MB por enlace.
         </p>
 
         <form

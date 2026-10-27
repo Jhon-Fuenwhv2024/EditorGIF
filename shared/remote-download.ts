@@ -1,6 +1,6 @@
 /** Lógica compartida: resolver enlaces (Drive/Dropbox/…) y descargar con límites seguros. */
 
-export const MAX_BYTES = 35 * 1024 * 1024 // ~35 MB por enlace
+export const MAX_BYTES = 50 * 1024 * 1024 // ~50 MB por enlace
 
 const BLOCKED_HOSTS = new Set([
   'localhost',

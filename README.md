@@ -38,7 +38,7 @@ npm run preview  # servir el build (incluye el proxy de enlaces)
 - El archivo en Drive debe estar compartido como **«Cualquier persona con el enlace»** (lector).
 - Acepta URLs del tipo `https://drive.google.com/file/d/ID/view`.
 - También Dropbox (`dl=0` → descarga) y URLs directas a un `.mp4` / `.webm` / `.mov`.
-- Límite orientativo por enlace: **~35 MB**. Videos más grandes: descárgalos y súbelos como archivo.
+- Límite orientativo por enlace: **~50 MB**. Videos más grandes: descárgalos y súbelos como archivo.
 - En producción, despliega en **Netlify** para que la function `netlify/functions/fetch-video.ts` esté disponible.
 
 ## Notas técnicas
