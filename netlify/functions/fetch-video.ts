@@ -1,5 +1,9 @@
 import type { Config, Context } from '@netlify/functions'
-import { downloadRemoteVideo, resolveSourceUrl } from '../../shared/remote-download'
+import {
+  downloadRemoteVideo,
+  MAX_BYTES,
+  resolveSourceUrl,
+} from '../../shared/remote-download'
 
 export default async (req: Request, _context: Context) => {
   if (req.method === 'OPTIONS') {
@@ -15,11 +19,21 @@ export default async (req: Request, _context: Context) => {
 
   try {
     let rawUrl = ''
+    let maxBytes = MAX_BYTES
     if (req.method === 'GET') {
-      rawUrl = new URL(req.url).searchParams.get('url') || ''
+      const u = new URL(req.url)
+      rawUrl = u.searchParams.get('url') || ''
+      const mb = Number(u.searchParams.get('maxBytes'))
+      if (Number.isFinite(mb) && mb > 0) maxBytes = mb
     } else {
-      const body = (await req.json().catch(() => null)) as { url?: string } | null
+      const body = (await req.json().catch(() => null)) as {
+        url?: string
+        maxBytes?: number
+      } | null
       rawUrl = body?.url?.trim() || ''
+      if (typeof body?.maxBytes === 'number' && body.maxBytes > 0) {
+        maxBytes = body.maxBytes
+      }
     }
 
     if (!rawUrl) {
@@ -29,7 +43,7 @@ export default async (req: Request, _context: Context) => {
     // Validación temprana para mensajes claros
     resolveSourceUrl(rawUrl)
 
-    const file = await downloadRemoteVideo(rawUrl)
+    const file = await downloadRemoteVideo(rawUrl, maxBytes)
     return new Response(file.bytes, {
       status: 200,
       headers: {

@@ -5,9 +5,11 @@ import { fetchVideoFromUrl } from '../lib/remoteVideo'
 type Props = {
   onFile: (file: File) => void
   disabled?: boolean
+  maxBytes?: number
+  maxMbLabel?: number
 }
 
-export function UploadZone({ onFile, disabled }: Props) {
+export function UploadZone({ onFile, disabled, maxBytes, maxMbLabel = 35 }: Props) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [dragging, setDragging] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -37,7 +39,11 @@ export function UploadZone({ onFile, disabled }: Props) {
 
     setLinkBusy(true)
     try {
-      const file = await fetchVideoFromUrl(value, (p) => setLinkStatus(p.message))
+      const file = await fetchVideoFromUrl(
+        value,
+        (p) => setLinkStatus(p.message),
+        maxBytes,
+      )
       if (!isAcceptedVideo(file) && !file.type.startsWith('video/')) {
         throw new Error('El enlace no parece un video MP4, WebM o MOV.')
       }
@@ -139,7 +145,7 @@ export function UploadZone({ onFile, disabled }: Props) {
         </h2>
         <p className="mt-1 text-sm text-[var(--ink)]/65 sm:text-base">
           URL directa, Google Drive (compartido con «Cualquier persona con el enlace») o
-          Dropbox. Máx. ~35&nbsp;MB por enlace.
+          Dropbox. Máx. ~{maxMbLabel}&nbsp;MB por enlace.
         </p>
 
         <form

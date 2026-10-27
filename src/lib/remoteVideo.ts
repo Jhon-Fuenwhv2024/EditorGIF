@@ -16,6 +16,7 @@ export type RemoteFetchProgress = {
 export async function fetchVideoFromUrl(
   rawUrl: string,
   onProgress?: (p: RemoteFetchProgress) => void,
+  maxBytes?: number,
 ): Promise<File> {
   onProgress?.({ phase: 'resolving', message: 'Resolviendo enlace…' })
   const resolved = resolveSourceUrl(rawUrl)
@@ -31,7 +32,7 @@ export async function fetchVideoFromUrl(
   })
 
   try {
-    const direct = await tryDirectDownload(resolved.url)
+    const direct = await tryDirectDownload(resolved.url, maxBytes)
     if (direct) {
       onProgress?.({ phase: 'ready', message: 'Video listo' })
       return direct
@@ -40,12 +41,15 @@ export async function fetchVideoFromUrl(
     // Seguimos con el proxy
   }
 
-  const proxied = await downloadViaProxy(rawUrl)
+  const proxied = await downloadViaProxy(rawUrl, maxBytes)
   onProgress?.({ phase: 'ready', message: 'Video listo' })
   return proxied
 }
 
-async function tryDirectDownload(url: string): Promise<File | null> {
+async function tryDirectDownload(
+  url: string,
+  maxBytes?: number,
+): Promise<File | null> {
   const res = await fetch(url, {
     mode: 'cors',
     credentials: 'omit',
@@ -56,17 +60,27 @@ async function tryDirectDownload(url: string): Promise<File | null> {
   const type = res.headers.get('content-type') || ''
   if (type.includes('text/html')) return null
 
+  const len = Number(res.headers.get('content-length') || 0)
+  if (maxBytes && len > maxBytes) {
+    throw new Error(
+      `El video supera el máximo de ${(maxBytes / (1024 * 1024)).toFixed(0)} MB por enlace.`,
+    )
+  }
+
   const blob = await res.blob()
+  if (maxBytes && blob.size > maxBytes) {
+    throw new Error(
+      `El video supera el máximo de ${(maxBytes / (1024 * 1024)).toFixed(0)} MB por enlace.`,
+    )
+  }
   if (blob.size < 64) return null
   if (type.includes('text/html')) return null
 
-  // Si el servidor no manda video/*, igual aceptamos binarios razonables
   const filename = guessFilename(res, url)
   const file = new File([blob], filename, {
     type: blob.type || guessMime(filename),
   })
   if (!isAcceptedVideo(file) && !blob.type.startsWith('video/')) {
-    // Algunos hosts mandan application/octet-stream
     if (!/\.(mp4|webm|mov|m4v)$/i.test(filename) && !blob.type.includes('octet-stream')) {
       return null
     }
@@ -74,11 +88,14 @@ async function tryDirectDownload(url: string): Promise<File | null> {
   return file
 }
 
-async function downloadViaProxy(rawUrl: string): Promise<File> {
+async function downloadViaProxy(
+  rawUrl: string,
+  maxBytes?: number,
+): Promise<File> {
   const res = await fetch('/api/fetch-video', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ url: rawUrl }),
+    body: JSON.stringify({ url: rawUrl, maxBytes }),
   })
 
   const contentType = res.headers.get('content-type') || ''

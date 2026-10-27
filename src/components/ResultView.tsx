@@ -1,3 +1,5 @@
+import { AdUnit } from './AdUnit'
+import { ShareGif } from './ShareGif'
 import { formatBytes } from '../lib/format'
 import type { GifResult } from '../types'
 
@@ -6,9 +8,16 @@ type Props = {
   fileName: string
   onEditAgain: () => void
   onNewVideo: () => void
+  showAd?: boolean
 }
 
-export function ResultView({ result, fileName, onEditAgain, onNewVideo }: Props) {
+export function ResultView({
+  result,
+  fileName,
+  onEditAgain,
+  onNewVideo,
+  showAd = false,
+}: Props) {
   const downloadName = fileName.replace(/\.[^.]+$/, '') + '.gif'
 
   return (
@@ -61,6 +70,14 @@ export function ResultView({ result, fileName, onEditAgain, onNewVideo }: Props)
           Otro video
         </button>
       </div>
+
+      <ShareGif gifUrl={result.url} fileName={fileName} />
+
+      {showAd && (
+        <div className="border-t border-[var(--line)] pt-4">
+          <AdUnit slot="result" />
+        </div>
+      )}
     </section>
   )
 }

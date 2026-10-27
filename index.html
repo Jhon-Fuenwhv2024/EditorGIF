@@ -3,12 +3,55 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/pwa-192.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Fotogif convierte video a GIF en tu navegador: recorta, ajusta calidad y descarga sin subir archivos."
+      content="Fotogif convierte video a GIF en tu navegador: recorta, ajusta calidad y descarga. Sin subir tus archivos a la nube."
     />
+    <meta name="theme-color" content="#0c1f1c" />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://videogif.trainfit.cloud/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="es_ES" />
+    <meta property="og:site_name" content="Fotogif" />
+    <meta property="og:title" content="Fotogif — Video a GIF en el navegador" />
+    <meta
+      property="og:description"
+      content="Convierte video a GIF en tu dispositivo: recorte, FPS, Drive y descarga. Plan Pro opcional sin anuncios."
+    />
+    <meta property="og:image" content="https://videogif.trainfit.cloud/og.png" />
+    <meta property="og:url" content="https://videogif.trainfit.cloud/" />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Fotogif — Video a GIF en el navegador" />
+    <meta
+      name="twitter:description"
+      content="Convierte video a GIF en tu dispositivo: recorte, FPS, Drive y descarga."
+    />
+    <meta name="twitter:image" content="https://videogif.trainfit.cloud/og.png" />
+
     <title>Fotogif — Video a GIF en el navegador</title>
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "Fotogif",
+        "url": "https://videogif.trainfit.cloud/",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "Web",
+        "inLanguage": "es",
+        "description": "Convierte video a GIF en el navegador con recorte, FPS y descarga local.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD",
+          "description": "Plan gratuito con conversión local. Suscripción Pro opcional vía Stripe (precio definido en tu cuenta Stripe)."
+        }
+      }
+    </script>
   </head>
   <body>
     <div id="root"></div>

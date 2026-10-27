@@ -1,6 +1,7 @@
 /** Lógica compartida: resolver enlaces (Drive/Dropbox/…) y descargar con límites seguros. */
 
-export const MAX_BYTES = 35 * 1024 * 1024 // ~35 MB por enlace
+/** Límite por defecto (plan gratis) si el llamador no pasa otro. */
+export const MAX_BYTES = 35 * 1024 * 1024
 
 const BLOCKED_HOSTS = new Set([
   'localhost',
@@ -245,16 +246,20 @@ async function fetchOnce(url: string): Promise<Response> {
  * Descarga un video remoto (Drive / Dropbox / URL directa).
  * Pensado para ejecutarse en servidor (Netlify Function o middleware Vite).
  */
-export async function downloadRemoteVideo(rawUrl: string): Promise<DownloadedVideo> {
+export async function downloadRemoteVideo(
+  rawUrl: string,
+  maxBytes: number = MAX_BYTES,
+): Promise<DownloadedVideo> {
   const resolved = resolveSourceUrl(rawUrl)
   assertPublicHttpUrl(resolved.url)
+  const limit = maxBytes > 0 ? maxBytes : MAX_BYTES
 
   let res = await fetchOnce(resolved.url)
   if (!res.ok && res.status !== 303 && res.status !== 302) {
     throw new Error(`No se pudo descargar el video (HTTP ${res.status}). ¿El enlace es público?`)
   }
 
-  let bytes = await readBodyLimited(res, MAX_BYTES)
+  let bytes = await readBodyLimited(res, limit)
   let contentType = res.headers.get('content-type') || ''
   let filename = filenameFromHeaders(res.headers.get('content-disposition'), resolved.url)
 
@@ -273,7 +278,7 @@ export async function downloadRemoteVideo(rawUrl: string): Promise<DownloadedVid
         `Google Drive rechazó la descarga (HTTP ${res.status}). Comparte el archivo como «Cualquier persona con el enlace».`,
       )
     }
-    bytes = await readBodyLimited(res, MAX_BYTES)
+    bytes = await readBodyLimited(res, limit)
     contentType = res.headers.get('content-type') || contentType
     filename = filenameFromHeaders(res.headers.get('content-disposition'), retryUrl) || `drive-${driveId}.mp4`
 
