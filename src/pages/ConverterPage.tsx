@@ -170,7 +170,6 @@ export function ConverterPage() {
         settings,
         source.height,
         setProgress,
-        { watermark: !isPro },
       )
       const url = URL.createObjectURL(blob)
       setResult((prev) => {
@@ -276,7 +275,6 @@ export function ConverterPage() {
                 <p className="mt-1 text-sm text-[var(--ink)]/65">
                   {source.name} · {formatTime(source.duration)} · clip ≈{' '}
                   {formatTime(estimated)}
-                  {!isPro && ' · marca de agua en el plan gratis'}
                 </p>
               </div>
               <button

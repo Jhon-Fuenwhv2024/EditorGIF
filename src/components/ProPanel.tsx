@@ -94,7 +94,7 @@ export function ProPanel() {
       }
       setMessage(
         data.isPro
-          ? '¡Pro restaurado! Sin anuncios, sin marca de agua y más límite por enlace.'
+          ? '¡Pro restaurado! Sin anuncios y con más límite por enlace.'
           : 'No hay suscripción Pro activa para ese email.',
       )
     } catch (err) {
@@ -115,11 +115,10 @@ export function ProPanel() {
             Fotogif Pro
           </p>
           <h2 id="pro-heading" className="font-display mt-1 text-2xl text-[var(--ink)]">
-            {isPro ? 'Tu plan Pro está activo' : 'Quita anuncios y marca de agua'}
+            {isPro ? 'Tu plan Pro está activo' : 'Quita anuncios y aumenta el límite'}
           </h2>
           <p className="mt-2 max-w-xl text-sm text-[var(--ink)]/70">
-            Pro: sin anuncios, sin «hecho con Fotogif» en el GIF y mayor tamaño al
-            importar por enlace.
+            Pro: sin anuncios y con mayor tamaño al importar por enlace.
             {label ? (
               <>
                 {' '}

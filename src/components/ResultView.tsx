@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { AdUnit } from './AdUnit'
 import { ShareGif } from './ShareGif'
 import { formatBytes } from '../lib/format'
@@ -18,10 +19,13 @@ export function ResultView({
   onNewVideo,
   showAd = false,
 }: Props) {
+  const [name, setName] = useState(() => fileName.replace(/\.[^.]+$/, ''))
   const safeName =
-    fileName
-      .replace(/\.gif$/i, '')
-      .replace(/[<>:"/\\|?*\u0000-\u001f]/g, '-')
+    Array.from(
+      name.replace(/\.gif$/i, '').replace(/[<>:"/\\|?*]/g, '-'),
+      (character) => (character.charCodeAt(0) < 32 ? '-' : character),
+    )
+      .join('')
       .trim()
       .replace(/[. ]+$/, '') || 'fotogif'
   const downloadName = `${safeName}.gif`
@@ -74,15 +78,26 @@ export function ResultView({
 
         <aside className="flex min-h-0 flex-col justify-center gap-2.5 rounded-[1.4rem] border border-[var(--line)] bg-white/80 p-3 shadow-[0_12px_30px_rgba(26,42,37,0.07)] sm:gap-3 sm:p-4 lg:self-center">
           <div className="min-w-0">
-            <p className="mb-1.5 text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--ink)]/50 sm:text-[10px]">
-              Nombre del archivo
-            </p>
-            <p
-              className="break-all rounded-xl border border-[var(--line)] bg-[var(--sand)] px-3 py-2.5 text-xs font-semibold leading-snug text-[var(--ink)] sm:text-sm"
-              title={downloadName}
+            <label
+              htmlFor="gif-file-name"
+              className="mb-1.5 block text-[9px] font-bold uppercase tracking-[0.16em] text-[var(--ink)]/50 sm:text-[10px]"
             >
-              {downloadName}
-            </p>
+              Nombre del archivo
+            </label>
+            <div className="flex min-w-0 items-center rounded-xl border border-[var(--line)] bg-[var(--sand)] px-3 py-2.5">
+              <input
+                id="gif-file-name"
+                type="text"
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                maxLength={120}
+                className="min-w-0 flex-1 bg-transparent text-xs font-semibold leading-snug text-[var(--ink)] outline-none sm:text-sm"
+                aria-label="Nombre del archivo GIF, sin extensión"
+              />
+              <span className="shrink-0 text-xs font-semibold text-[var(--ink)]/55 sm:text-sm">
+                .gif
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center justify-between gap-3 border-t border-[var(--line)] pt-2.5">

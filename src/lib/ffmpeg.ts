@@ -19,7 +19,6 @@ function escapeDrawtext(text: string): string {
 function buildVideoFilters(
   settings: EditSettings,
   sourceHeight: number,
-  watermark: boolean,
 ): string {
   const filters: string[] = []
 
@@ -48,13 +47,6 @@ function buildVideoFilters(
     const safe = escapeDrawtext(settings.text.trim())
     filters.push(
       `drawtext=fontfile=/font.ttf:text='${safe}':fontsize=${fontSize}:fontcolor=0x${color}:borderw=2:bordercolor=black@0.55:x=(w-text_w)/2:y=h-th-${Math.max(8, Math.round(sourceHeight * 0.03))}`,
-    )
-  }
-
-  if (watermark) {
-    // Marca pequeña en esquina (plan gratis)
-    filters.push(
-      `drawtext=fontfile=/font.ttf:text='${escapeDrawtext('hecho con Fotogif')}':fontsize=14:fontcolor=white@0.75:borderw=1:bordercolor=black@0.35:x=w-tw-10:y=h-th-8`,
     )
   }
 
@@ -98,10 +90,8 @@ export async function convertToGif(
   settings: EditSettings,
   sourceHeight: number,
   onProgress: (progress: ConversionProgress) => void,
-  options: { watermark?: boolean } = {},
 ): Promise<Blob> {
   const ffmpeg = await getFFmpeg()
-  const watermark = Boolean(options.watermark)
 
   const inputName = 'input' + getExtension(file.name)
   const paletteName = 'palette.png'
@@ -111,14 +101,14 @@ export async function convertToGif(
 
   await ffmpeg.writeFile(inputName, await fetchFile(file))
 
-  if (settings.text.trim() || watermark) {
+  if (settings.text.trim()) {
     await ffmpeg.writeFile(
       'font.ttf',
       await fetchFile(`${window.location.origin}/fonts/DejaVuSans.ttf`),
     )
   }
 
-  const vf = buildVideoFilters(settings, sourceHeight, watermark)
+  const vf = buildVideoFilters(settings, sourceHeight)
   const start = Math.max(0, settings.start)
   const end = Math.max(start + 0.1, settings.end)
   const duration = (end - start) / Math.max(0.1, settings.speed)

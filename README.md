@@ -29,8 +29,8 @@ npm run lint
 - Subida de video o importación por enlace (URL, Google Drive, Dropbox)
 - Edición: recorte, ancho, FPS, velocidad, crop, texto, invertir, loop
 - GIF con paleta (`palettegen` / `paletteuse`) y progreso
-- Plan gratis: anuncios opcionales, marca de agua «hecho con Fotogif», ~60 MB por enlace
-- Plan Pro (Stripe): sin anuncios, sin marca de agua, límite mayor, portal para cancelar
+- Plan gratis: anuncios opcionales, sin marca de agua, ~60 MB por enlace
+- Plan Pro (Stripe): sin anuncios, límite mayor, portal para cancelar
 - Landing, FAQ, SEO, PWA, compartir GIF, privacidad y términos
 
 ## Variables de entorno

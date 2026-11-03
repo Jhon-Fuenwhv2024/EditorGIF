@@ -14,7 +14,7 @@ const faqs = [
   },
   {
     q: '¿Qué incluye Fotogif Pro?',
-    a: `Sin anuncios, sin marca de agua «hecho con Fotogif», y hasta ~${proMaxMb()} MB al importar por enlace (el plan gratis permite ~${freeMaxMb()} MB). La suscripción se gestiona con Stripe.`,
+    a: `Sin anuncios y hasta ~${proMaxMb()} MB al importar por enlace (el plan gratis permite ~${freeMaxMb()} MB). La suscripción se gestiona con Stripe.`,
   },
   {
     q: '¿Puedo cancelar Pro?',
@@ -51,7 +51,8 @@ export function LandingPage() {
           </h1>
           <p className="relative mt-4 max-w-xl text-lg text-[var(--ink)]/75 sm:text-xl">
             Recorta, ajusta FPS y descarga GIFs con calidad de paleta. Sin cuenta
-            obligatoria. Pro opcional para quitar anuncios y marca de agua.
+            obligatoria. Pro opcional para quitar anuncios y aumentar el límite de
+            importación por enlace.
           </p>
           <div className="relative mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
@@ -82,8 +83,8 @@ export function LandingPage() {
             {
               t: 'Pro cuando lo necesites',
               d: priceHint
-                ? `Sin anuncios ni marca de agua. ${priceHint}`
-                : 'Sin anuncios ni marca de agua. El precio aparece en Stripe Checkout.',
+                ? `Sin anuncios y con mayor límite de importación por enlace. ${priceHint}`
+                : 'Sin anuncios y con mayor límite de importación por enlace. El precio aparece en Stripe Checkout.',
             },
           ].map((item) => (
             <div key={item.t} className="border-l-2 border-[var(--coral)]/40 pl-4">
